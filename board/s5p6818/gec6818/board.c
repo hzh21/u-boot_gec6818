@@ -698,19 +698,17 @@ int dram_init(void)
 /* u-boot dram board specific */
 int dram_init_banksize(void)
 {
-#define SCR_USER_SIG6_READ		(SCR_ALIVE_BASE + 0x0F0)
-	int g_NR_chip = readl(SCR_USER_SIG6_READ) & 0x3;
-
-	/* set global data memory */
+	/* 设置启动参数基地址 */
 	gd->bd->bi_boot_params = CFG_SYS_SDRAM_BASE + 0x00000100;
 
-	gd->bd->bi_dram[0].start = CFG_SYS_SDRAM_BASE;
-	gd->bd->bi_dram[0].size  = CFG_SYS_SDRAM_SIZE;
+	/* 声明第一个 1GB Bank */
+	gd->bd->bi_dram[0].start = CFG_SYS_SDRAM_BASE; // 0x40000000
+	gd->bd->bi_dram[0].size  = 0x40000000;         // 1GB
 
-	if (g_NR_chip > 1) {
-		gd->bd->bi_dram[1].start = 0x80000000;
-		gd->bd->bi_dram[1].size  = 0x40000000;
-	}
+	/* 强行声明第二个 1GB Bank，不再判断 g_NR_chip */
+	gd->bd->bi_dram[1].start = 0x80000000;         // 0x80000000
+	gd->bd->bi_dram[1].size  = 0x40000000;         // 1GB
+
 	return 0;
 }
 

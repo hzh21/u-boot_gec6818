@@ -690,7 +690,8 @@ int splash_screen_prepare(void)
 /* u-boot dram initialize */
 int dram_init(void)
 {
-	gd->ram_size = CFG_SYS_SDRAM_SIZE;
+	/* 直接声明 2GB 大小 (0x80000000) */
+	gd->ram_size = 0x80000000; 
 	return 0;
 }
 

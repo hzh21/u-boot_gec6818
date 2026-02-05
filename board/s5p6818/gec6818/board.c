@@ -589,13 +589,6 @@ static void bd_check_reset(void)
 
 int board_early_init_f(void)
 {
-	/* --- 在 MMU 开启前，暴力开启 2GB 内存窗口 --- */
-	/* 此时 CPU 处于物理地址模式，写寄存器绝不会报错 */
-	writel(0x00000001, (void *)0xC00E0014); // 开启配置
-	writel(0x13210B40, (void *)0xC00E0018); // 确认 Bank 0
-	writel(0x13210B80, (void *)0xC00E001C); // 激活 Bank 1
-	writel(0x00000000, (void *)0xC00E0014); // 锁定配置
-
 	return 0;
 }
 

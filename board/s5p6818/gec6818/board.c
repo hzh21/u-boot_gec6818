@@ -699,10 +699,8 @@ int dram_init_banksize(void)
 	gd->bd->bi_dram[0].start = CFG_SYS_SDRAM_BASE;
 	gd->bd->bi_dram[0].size  = CFG_SYS_SDRAM_SIZE;
 
-	if (g_NR_chip > 1) {
-		gd->bd->bi_dram[1].start = 0x80000000;
-		gd->bd->bi_dram[1].size  = 0x40000000;
-	}
+	gd->bd->bi_dram[1].start = 0x80000000;
+	gd->bd->bi_dram[1].size  = 0x40000000;
 	return 0;
 }
 

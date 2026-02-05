@@ -12,6 +12,7 @@
 #include <asm/global_data.h>
 #include <asm/sections.h>
 #include <asm/io.h>
+#include <asm/armv8/mmu.h>
 #include <asm/arch/nexell.h>
 #include <asm/arch/clk.h>
 
@@ -77,3 +78,30 @@ int arch_misc_init(void)
 	return 0;
 }
 #endif	/* CONFIG_ARCH_MISC_INIT */
+/* * S5P6818 内存映射表
+ * 必须在这里定义，以确保 SoC 核心层级能够识别 DREX 寄存器区
+ */
+static struct mm_region s5p6818_mem_map[] = {
+	{
+		/* 映射 2GB 内存区间 (0x40000000 ~ 0xBFFFFFFF) */
+		.virt = 0x40000000UL,
+		.phys = 0x40000000UL,
+		.size = 0x80000000UL, 
+		.attrs = PTE_BLOCK_MEMTYPE(MT_NORMAL) |
+			 PTE_BLOCK_INNER_SHARE
+	}, {
+		/* 映射寄存器区 (0xC0000000 开始，包含 DREX 所在位置) */
+		.virt = 0xc0000000UL,
+		.phys = 0xc0000000UL,
+		.size = 0x02000000UL, 
+		.attrs = PTE_BLOCK_MEMTYPE(MT_DEVICE_NGNRNE) |
+			 PTE_BLOCK_NON_SHARE |
+			 PTE_BLOCK_PXN | PTE_BLOCK_UXN
+	}, {
+		/* 结束标志 */
+		0,
+	}
+};
+
+/* 声明全局指针，让 U-Boot 启动时加载这张表 */
+struct mm_region *mem_map = s5p6818_mem_map;

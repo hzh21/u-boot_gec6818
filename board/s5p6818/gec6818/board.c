@@ -594,6 +594,13 @@ int board_early_init_f(void)
 
 int board_init(void)
 {
+	/* --- 强制开启 2GB 内存硬件窗口 --- */
+	/* 注意：如果这一步编译后导致重启，说明必须先去修改 MMU 映射表 */
+	writel(0x00000001, (void *)0xC00E0014); // 进入配置模式
+	writel(0x13210B40, (void *)0xC00E0018); // 确保 Bank 0 开启
+	writel(0x13210B80, (void *)0xC00E001C); // 强开 Bank 1 (0x80000000)
+	writel(0x00000000, (void *)0xC00E0014); // 退出配置模式
+
 	bd_hwrev_init();
 	bd_bootdev_init();
 	bd_onewire_init();

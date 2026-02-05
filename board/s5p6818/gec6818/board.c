@@ -595,12 +595,6 @@ int board_early_init_f(void)
 
 int board_init(void)
 {
-	/* --- 关键：暴力开启 DREX Bank 1 (2GB 模式) --- */
-	/* 在 U-Boot 2025 中，此处必须配合下方的 MMU 映射表，否则会触发 Abort */
-	writel(0x00000001, (void *)0xC00E0014); 
-	writel(0x13210B40, (void *)0xC00E0018); 
-	writel(0x13210B80, (void *)0xC00E001C); 
-	writel(0x00000000, (void *)0xC00E0014);
 
 	bd_hwrev_init();
 	bd_bootdev_init();
@@ -622,6 +616,14 @@ int board_init(void)
 int board_late_init(void)
 {
 	bd_update_env();
+	/* --- 关键：在这里开启 2GB 硬件窗口 --- */
+	/* 此时 MMU 映射已完全生效，访问 0xC00E0000 是安全的 */
+	printf("Unlocking 2GB RAM window...\n");
+	writel(0x00000001, (void *)0xC00E0014); 
+	writel(0x13210B40, (void *)0xC00E0018); 
+	writel(0x13210B80, (void *)0xC00E001C); 
+	writel(0x00000000, (void *)0xC00E0014); 
+	printf("2GB RAM window unlocked successfully!\n");
 
 #ifdef CONFIG_REVISION_TAG
 	set_board_rev();

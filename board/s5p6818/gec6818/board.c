@@ -685,18 +685,6 @@ int splash_screen_prepare(void)
 /* u-boot dram initialize */
 int dram_init(void)
 {
-	/* --- 1. 先给内存控制器（DREX）供电/通时钟 --- */
-	/* 很多 6818 镜像在此时 DREX 的时钟是关着的，直接写 0xC00E 会挂起总线 */
-	/* 我们通过 CLKPWR 模块开启 DREX 的时钟位（假设为通用配置） */
-	// writel(readl(0xc0010000 + 0x???), ...) // 如果你有精确位定义
-	
-	/* --- 2. 暴力开启硬件窗口 --- */
-	/* 此时 MMU 大概率还没开启，物理访问通常是通的 */
-	writel(0x00000001, (void *)0xC00E0014); // 开启配置
-	writel(0x13210B40, (void *)0xC00E0018); // Bank 0
-	writel(0x13210B80, (void *)0xC00E001C); // Bank 1
-	writel(0x00000000, (void *)0xC00E0014); // 锁定
-
 	/* --- 3. 让 U-Boot 待在 1GB 安全区 --- */
 	gd->ram_size = 0x40000000; 
 	return 0;

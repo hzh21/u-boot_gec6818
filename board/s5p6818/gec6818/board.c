@@ -30,6 +30,7 @@
 #include <asm/global_data.h>
 #include <asm/io.h>
 #include <asm/armv8/mmu.h>
+#include <asm/system.h>
 #include <asm/arch/nexell.h>
 #include <asm/arch/nx_gpio.h>
 #include <asm/arch/display.h>
@@ -596,10 +597,10 @@ int board_init(void)
 {
 	/* --- 关键：暴力开启 DREX Bank 1 (2GB 模式) --- */
 	/* 在 U-Boot 2025 中，此处必须配合下方的 MMU 映射表，否则会触发 Abort */
-	writel(0x00000001, (void *)0xC00E0014); // 进入 DREX 配置模式
-	writel(0x13210B40, (void *)0xC00E0018); // 确保 Bank 0 正常 (1GB)
-	writel(0x13210B80, (void *)0xC00E001C); // 强行开启 Bank 1 (起始 0x80000000)
-	writel(0x00000000, (void *)0xC00E0014); // 退出配置模式并锁定
+	writel(0x00000001, (void *)0xC00E0014); 
+	writel(0x13210B40, (void *)0xC00E0018); 
+	writel(0x13210B80, (void *)0xC00E001C); 
+	writel(0x00000000, (void *)0xC00E0014);
 
 	bd_hwrev_init();
 	bd_bootdev_init();
@@ -751,17 +752,17 @@ int ft_board_setup(void *blob, struct bd_info *bd)
 	return 0;
 }
 #endif
-/* 这里的数组定义必须配合最上方的 #include <asm/armv8/mmu.h> */
+/* 针对 S5P6818 的 64 位内存映射表 */
 static struct mm_region s5p6818_mem_map[] = {
 	{
-		/* 映射 2GB 内存区间 (0x40000000 ~ 0xBFFFFFFF) */
+		/* 映射整个 2GB 内存区间 (0x40000000 ~ 0xBFFFFFFF) */
 		.virt = 0x40000000UL,
 		.phys = 0x40000000UL,
 		.size = 0x80000000UL, 
 		.attrs = PTE_BLOCK_MEMTYPE(MT_NORMAL) |
 			 PTE_BLOCK_INNER_SHARE
 	}, {
-		/* 关键：映射寄存器区 (0xC0000000 开始，包含 DREX 所在位置) */
+		/* 映射寄存器区 (0xC0000000 开始，包含 DREX 所在位置) */
 		.virt = 0xc0000000UL,
 		.phys = 0xc0000000UL,
 		.size = 0x02000000UL, 
@@ -769,10 +770,8 @@ static struct mm_region s5p6818_mem_map[] = {
 			 PTE_BLOCK_NON_SHARE |
 			 PTE_BLOCK_PXN | PTE_BLOCK_UXN
 	}, {
-		/* 结束标志 */
 		0,
 	}
 };
 
-/* 必须将该指针指向我们的自定义表，否则 U-Boot 不会使用它 */
 struct mm_region *mem_map = s5p6818_mem_map;

@@ -595,7 +595,6 @@ int board_early_init_f(void)
 
 int board_init(void)
 {
-
 	bd_hwrev_init();
 	bd_bootdev_init();
 	bd_onewire_init();
@@ -685,26 +684,24 @@ int splash_screen_prepare(void)
 /* u-boot dram initialize */
 int dram_init(void)
 {
-	/* --- 3. 让 U-Boot 待在 1GB 安全区 --- */
-	gd->ram_size = 0x40000000; 
+	gd->ram_size = CFG_SYS_SDRAM_SIZE;
 	return 0;
 }
 
 /* u-boot dram board specific */
 int dram_init_banksize(void)
 {
-	/* 强制设为 2，不再去读那个被荣品占用为 Fastboot 签名的 SIG6 寄存器 */
-	int g_NR_chip = 2; 
+#define SCR_USER_SIG6_READ		(SCR_ALIVE_BASE + 0x0F0)
+	int g_NR_chip = readl(SCR_USER_SIG6_READ) & 0x3;
 
+	/* set global data memory */
 	gd->bd->bi_boot_params = CFG_SYS_SDRAM_BASE + 0x00000100;
 
-	/* 声明第一个 1GB */
-	gd->bd->bi_dram[0].start = CFG_SYS_SDRAM_BASE; // 0x40000000
-	gd->bd->bi_dram[0].size  = 0x40000000;
+	gd->bd->bi_dram[0].start = CFG_SYS_SDRAM_BASE;
+	gd->bd->bi_dram[0].size  = CFG_SYS_SDRAM_SIZE;
 
-	/* 声明第二个 1GB */
 	if (g_NR_chip > 1) {
-		gd->bd->bi_dram[1].start = 0x80000000; // 第二个 Bank 起始地址
+		gd->bd->bi_dram[1].start = 0x80000000;
 		gd->bd->bi_dram[1].size  = 0x40000000;
 	}
 	return 0;
@@ -746,6 +743,7 @@ int ft_board_setup(void *blob, struct bd_info *bd)
 
 	return 0;
 }
+#endif
 #endif
 /* 针对 S5P6818 的 64 位内存映射表 */
 static struct mm_region s5p6818_mem_map[] = {

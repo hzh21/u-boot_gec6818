@@ -744,7 +744,6 @@ int ft_board_setup(void *blob, struct bd_info *bd)
 	return 0;
 }
 #endif
-#endif
 /* 针对 S5P6818 的 64 位内存映射表 */
 static struct mm_region s5p6818_mem_map[] = {
 	{

@@ -594,6 +594,13 @@ int board_early_init_f(void)
 
 int board_init(void)
 {
+	/* --- 关键：暴力开启 DREX Bank 1 (2GB 模式) --- */
+	/* 在 U-Boot 2025 中，此处必须配合下方的 MMU 映射表，否则会触发 Abort */
+	writel(0x00000001, (void *)0xC00E0014); // 进入 DREX 配置模式
+	writel(0x13210B40, (void *)0xC00E0018); // 确保 Bank 0 正常 (1GB)
+	writel(0x13210B80, (void *)0xC00E001C); // 强行开启 Bank 1 (起始 0x80000000)
+	writel(0x00000000, (void *)0xC00E0014); // 退出配置模式并锁定
+
 	bd_hwrev_init();
 	bd_bootdev_init();
 	bd_onewire_init();
@@ -683,24 +690,27 @@ int splash_screen_prepare(void)
 /* u-boot dram initialize */
 int dram_init(void)
 {
-	gd->ram_size = CFG_SYS_SDRAM_SIZE;
+	gd->ram_size = 0x40000000;
 	return 0;
 }
 
 /* u-boot dram board specific */
 int dram_init_banksize(void)
 {
-#define SCR_USER_SIG6_READ		(SCR_ALIVE_BASE + 0x0F0)
-	int g_NR_chip = readl(SCR_USER_SIG6_READ) & 0x3;
+	/* 强制设为 2，不再去读那个被荣品占用为 Fastboot 签名的 SIG6 寄存器 */
+	int g_NR_chip = 2; 
 
-	/* set global data memory */
 	gd->bd->bi_boot_params = CFG_SYS_SDRAM_BASE + 0x00000100;
 
-	gd->bd->bi_dram[0].start = CFG_SYS_SDRAM_BASE;
-	gd->bd->bi_dram[0].size  = CFG_SYS_SDRAM_SIZE;
+	/* 声明第一个 1GB */
+	gd->bd->bi_dram[0].start = CFG_SYS_SDRAM_BASE; // 0x40000000
+	gd->bd->bi_dram[0].size  = 0x40000000;
 
-	gd->bd->bi_dram[1].start = 0x80000000;
-	gd->bd->bi_dram[1].size  = 0x40000000;
+	/* 声明第二个 1GB */
+	if (g_NR_chip > 1) {
+		gd->bd->bi_dram[1].start = 0x80000000; // 第二个 Bank 起始地址
+		gd->bd->bi_dram[1].size  = 0x40000000;
+	}
 	return 0;
 }
 
@@ -741,3 +751,27 @@ int ft_board_setup(void *blob, struct bd_info *bd)
 	return 0;
 }
 #endif
+/* 必须加在文件末尾，确保包含相关头文件 */
+static struct mm_region s5p6818_mem_map[] = {
+	{
+		/* 映射 2GB 内存空间 (0x40000000 ~ 0xBFFFFFFF) */
+		.virt = 0x40000000UL,
+		.phys = 0x40000000UL,
+		.size = 0x80000000UL, 
+		.attrs = PTE_BLOCK_MEMTYPE(MT_NORMAL) |
+			 PTE_BLOCK_INNER_SHARE
+	}, {
+		/* 关键：映射 DREX/CLKPWR 所在的寄存器区 (0xC0000000 开始) */
+		.virt = 0xc0000000UL,
+		.phys = 0xc0000000UL,
+		.size = 0x01000000UL, 
+		.attrs = PTE_BLOCK_MEMTYPE(MT_DEVICE_NGNRNE) |
+			 PTE_BLOCK_NON_SHARE |
+			 PTE_BLOCK_PXN | PTE_BLOCK_UXN
+	}, {
+		/* 结束标志 */
+		0,
+	}
+};
+
+struct mm_region *mem_map = s5p6818_mem_map;

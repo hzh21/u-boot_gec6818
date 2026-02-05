@@ -692,23 +692,22 @@ int splash_screen_prepare(void)
 int dram_init(void)
 {
 	/* 直接声明 2GB 大小 (0x80000000) */
-	gd->ram_size = 0x80000000; 
+	gd->ram_size = 0x40000000; 
 	return 0;
 }
 
 /* u-boot dram board specific */
 int dram_init_banksize(void)
 {
-	/* 设置启动参数基地址 */
 	gd->bd->bi_boot_params = CFG_SYS_SDRAM_BASE + 0x00000100;
 
-	/* 声明第一个 1GB Bank */
-	gd->bd->bi_dram[0].start = CFG_SYS_SDRAM_BASE; // 0x40000000
-	gd->bd->bi_dram[0].size  = 0x40000000;         // 1GB
+	/* Bank 0: 1GB */
+	gd->bd->bi_dram[0].start = CFG_SYS_SDRAM_BASE;
+	gd->bd->bi_dram[0].size  = 0x40000000;
 
-	/* 强行声明第二个 1GB Bank，不再判断 g_NR_chip */
-	gd->bd->bi_dram[1].start = 0x80000000;         // 0x80000000
-	gd->bd->bi_dram[1].size  = 0x40000000;         // 1GB
+	/* Bank 1: 强行声明第二个 1GB */
+	gd->bd->bi_dram[1].start = 0x80000000;
+	gd->bd->bi_dram[1].size  = 0x40000000;
 
 	return 0;
 }

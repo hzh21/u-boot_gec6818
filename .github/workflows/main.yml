@@ -1,0 +1,39 @@
+name: Build King6818 U-Boot 2025
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            gcc-aarch64-linux-gnu \
+            gcc-arm-linux-gnueabi \
+            make bc device-tree-compiler \
+            libssl-dev libgnutls28-dev uuid-dev python3-dev swig pkg-config \
+            python3-pyelftools python3-setuptools  # 2025版本必备
+
+      - name: Configure and Build
+        run: |
+          export ARCH=arm64
+          export CROSS_COMPILE=aarch64-linux-gnu-
+          
+          # 1. 生成配置
+          make s5p6818_gec6818_defconfig
+          
+          # 2. 编译并直接生成包含 Header 的镜像
+          # 这里的 fip-nonsecure.img 是 Makefile 里定义的 target
+          make -j$(nproc) fip-nonsecure.img
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: King6818-Uboot-2025-Final
+          path: |
+            u-boot.bin
+            fip-nonsecure.img

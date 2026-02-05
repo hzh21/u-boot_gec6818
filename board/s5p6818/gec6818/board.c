@@ -594,7 +594,6 @@ int board_early_init_f(void)
 
 int board_init(void)
 {
-
 	bd_hwrev_init();
 	bd_bootdev_init();
 	bd_onewire_init();
@@ -684,24 +683,26 @@ int splash_screen_prepare(void)
 /* u-boot dram initialize */
 int dram_init(void)
 {
-	/* 直接声明 2GB 大小 (0x80000000) */
-	gd->ram_size = 0x40000000; 
+	gd->ram_size = CFG_SYS_SDRAM_SIZE;
 	return 0;
 }
 
 /* u-boot dram board specific */
 int dram_init_banksize(void)
 {
+#define SCR_USER_SIG6_READ		(SCR_ALIVE_BASE + 0x0F0)
+	int g_NR_chip = readl(SCR_USER_SIG6_READ) & 0x3;
+
+	/* set global data memory */
 	gd->bd->bi_boot_params = CFG_SYS_SDRAM_BASE + 0x00000100;
 
-	/* Bank 0: 1GB */
 	gd->bd->bi_dram[0].start = CFG_SYS_SDRAM_BASE;
-	gd->bd->bi_dram[0].size  = 0x40000000;
+	gd->bd->bi_dram[0].size  = CFG_SYS_SDRAM_SIZE;
 
-	/* Bank 1: 强行声明第二个 1GB */
-	gd->bd->bi_dram[1].start = 0x80000000;
-	gd->bd->bi_dram[1].size  = 0x40000000;
-
+	if (g_NR_chip > 1) {
+		gd->bd->bi_dram[1].start = 0x80000000;
+		gd->bd->bi_dram[1].size  = 0x40000000;
+	}
 	return 0;
 }
 

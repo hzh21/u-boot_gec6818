@@ -369,7 +369,7 @@ static void set_dtb_name(void)
 	//xiaoY 固定板子版本为00
 	// snprintf(info, ARRAY_SIZE(info),
 	// 	"s5p6818-nanopi3-rev%02x.dtb", 0);
-	sprintf(info,"s5p6818-nanopi3-00.dtb");
+	sprintf(info,"s5p6818-nanopi3-rev00.dtb");
 	env_set("dtb_name", info);
 }
 

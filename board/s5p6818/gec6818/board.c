@@ -367,7 +367,7 @@ static void set_dtb_name(void)
 
 	snprintf(info, ARRAY_SIZE(info),
 			"s5p6818-nanopi3-rev%02x.dtb", 1);
-	setenv("dtb_name", info);
+	env_set("dtb_name", info);
 }
 
 static void bd_update_env(void)

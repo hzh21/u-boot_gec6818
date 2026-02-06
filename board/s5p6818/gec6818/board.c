@@ -29,8 +29,7 @@
 #include <part.h>
 #include <asm/global_data.h>
 #include <asm/io.h>
-#include <asm/armv8/mmu.h>
-#include <asm/system.h>
+
 #include <asm/arch/nexell.h>
 #include <asm/arch/nx_gpio.h>
 #include <asm/arch/display.h>
@@ -356,7 +355,7 @@ static void set_board_rev(void)
 
 	// snprintf(info, ARRAY_SIZE(info), "%02x", get_board_rev());
 	//xiaoY 固定板子版本为00
-	snprintf(info, ARRAY_SIZE(info), "%02x", 1);
+	snprintf(info, ARRAY_SIZE(info), "%02x", 0);
 	env_set("board_rev", info);
 }
 #endif
@@ -365,8 +364,12 @@ static void set_dtb_name(void)
 {
 	char info[64] = {0, };
 
-	snprintf(info, ARRAY_SIZE(info),
-			"s5p6818-nanopi3-rev%02x.dtb", 1);
+	// snprintf(info, ARRAY_SIZE(info),
+	// 		"s5p6818-nanopi3-rev%02x.dtb", get_board_rev());
+	//xiaoY 固定板子版本为00
+	// snprintf(info, ARRAY_SIZE(info),
+	// 	"s5p6818-nanopi3-rev%02x.dtb", 0);
+	sprintf(info,"s5p6818-nanopi3-00.dtb");
 	env_set("dtb_name", info);
 }
 
@@ -696,10 +699,10 @@ int dram_init_banksize(void)
 	gd->bd->bi_dram[0].start = CFG_SYS_SDRAM_BASE;
 	gd->bd->bi_dram[0].size  = CFG_SYS_SDRAM_SIZE;
 
-	
-	gd->bd->bi_dram[1].start = 0x80000000;
-	gd->bd->bi_dram[1].size  = 0x40000000;
-	
+	if (g_NR_chip > 1) {
+		gd->bd->bi_dram[1].start = 0x80000000;
+		gd->bd->bi_dram[1].size  = 0x40000000;
+	}
 	return 0;
 }
 

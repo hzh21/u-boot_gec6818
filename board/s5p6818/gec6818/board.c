@@ -593,7 +593,18 @@ int board_early_init_f(void)
 }
 
 int board_init(void)
-{
+{	/* --- 2GB 暴力开启补丁 --- */
+	/* 1. 解锁内存控制器配置 */
+	writel(0x00000001, (void *)0xC00E0014); 
+	
+	/* 2. 强行开启 Bank 1 (CS1) 的映射窗口 */
+	/* 这个值参考自荣品 2GB NSIH 参数：0x13210B80 */
+	/* 它的含义是将 0x80000000 ~ 0xBFFFFFFF 映射给第二片内存 */
+	writel(0x13210B80, (void *)0xC00E001C); 
+	
+	/* 3. 锁定配置 */
+	writel(0x00000000, (void *)0xC00E0014); 
+	/* ------------------------ */
 	bd_hwrev_init();
 	bd_bootdev_init();
 	bd_onewire_init();

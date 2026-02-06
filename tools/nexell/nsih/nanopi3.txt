@@ -57,8 +57,8 @@ FFFF0000	// 0x04C : Launch Address for 2ndboot.
 // MCU-D registers
 //------------------------------------------------------------------------------
 // Mem Controller Configuration
-03100301	// 0x098	/Chip Num:1	/Chip Row:15	/Bus Width:16	/Chip Col:10
-004007C0	// 0x09C	/Mem size:(2^15)x(2^10)x8x16
+03100302	// 0x098	/Chip Num:1	/Chip Row:15	/Bus Width:16	/Chip Col:10
+008007C0	// 0x09C	/Mem size:(2^15)x(2^10)x8x16
 06000B08	// 0x0A0	/CWL:8	/CL:11	/MR1_AL:0	/MR0_WR:6
 
 // DDR PHY delay timing Configuration
@@ -95,7 +95,7 @@ FFFF0000	// 0x04C : Launch Address for 2ndboot.
 00000000	// 0x0E4
 00000000	// 0x0E8
 00000000	// 0x0EC
-00000000	// 0x0F0
+00000002	// 0x0F0
 00000000	// 0x0F4
 00000000	// 0x0F8
 00000000	// 0x0FC

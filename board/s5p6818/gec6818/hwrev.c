@@ -87,26 +87,18 @@ u32 get_board_rev(void)
 const char *get_board_name(void)
 {
 
-	// bd_hwrev_init();
+	/* 彻底废除引脚读取逻辑 */
+	// if (pcb_rev >= 0)
+	// 	return;
 
-	// switch (pcb_rev) {
-	// 	case 1:
-	// 		return "NanoPC-T3";
-	// 	case 3:
-	// 		return "Smart6818";
-	// 	case 4:
-	// 		return "xiaoY_NanoPC-T3T";
-	// 	case 5:
-	// 		return "NanoPi Fire 3";
-	// 	case 7:
-	// 		return "NanoPi M3";
-	// 	case 2:
-	// 		return "NanoPi M3B";
-	// 	default:
-	// 		return "s5p6818-X";
-	// }
+	// bd_hwrev_config_gpio();
 
-	//xiaoY gec6818开发版不需要区分各种板子，直接返回板子名称
-	return "gec6818";
+	// pcb_rev  = nx_gpio_get_input_value(__IO_GRP, __IO_PCB1);
+	// pcb_rev |= nx_gpio_get_input_value(__IO_GRP, __IO_PCB2) << 1;
+	// pcb_rev |= nx_gpio_get_input_value(__IO_GRP, __IO_PCB3) << 2;
+
+	/* 强行伪装：0b001 是 NanoPC-T3，它在固件中默认支持双 Bank */
+	pcb_rev = 1;
+	return "NanoPC-T3";
 }
 

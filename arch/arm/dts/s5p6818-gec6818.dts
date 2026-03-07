@@ -22,7 +22,7 @@
 		mmc1 = "/mmc@c0062000";
 		i2c0 = "/i2c@c00a4000";
 		i2c2 = "/i2c@c00a6000";
-		i2c3 = &i2c3;
+		i2c3 = "/i2c-gpio-3";
 	};
 
 	mmc0:mmc@c0062000 {
@@ -112,65 +112,65 @@
 			};
 		};
 	};
-};
 
-/* --- 以下为荣品特有硬件追加配置 --- */
+	/* --- 以下为荣品特有硬件，直接定义在根节点下 --- */
 
-/* 开启 I2C3 供 AXP228 使用 */
-&i2c3 {
-	status ="okay";
-	nexell,i2c-sda-delay = <100>;
-	nexell,i2c-max-bus-freq = <100000>;
-	
-	axp228: pmic@3e {
-		compatible = "x-powers,axp228";
-		reg = <0x3e>;
+	/* 使用 GPIO 模拟 I2C 驱动 AXP228 */
+	i2c3: i2c-gpio-3 {
+		compatible = "i2c-gpio";
+		gpios = <&gpioc 16 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>, /* SDA */
+			    <&gpioc 15 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>; /* SCL */
+		i2c-gpio,delay-us = <5>; /* 100KHz 速率 */
+		#address-cells = <1>;
+		#size-cells = <0>;
+		status = "okay";
 		
-		regulators {
-			dcdc1_reg: dcdc1 {
-				regulator-name = "vdd_sys_3.3V";
-				regulator-min-microvolt = <3300000>;
-				regulator-max-microvolt = <3300000>;
-				regulator-always-on;
-			};
-			dcdc2_reg: dcdc2 {
-				regulator-name = "vdd_arm_1.1V";
-				regulator-min-microvolt = <1100000>;
-				regulator-max-microvolt = <1100000>;
-				regulator-always-on;
-			};
-			dcdc3_reg: dcdc3 {
-				regulator-name = "vdd_core_1.0V";
-				regulator-min-microvolt = <1000000>;
-				regulator-max-microvolt = <1000000>;
-				regulator-always-on;
-			};
-			dcdc4_reg: dcdc4 {
-				regulator-name = "vdd_sys_1.45V";
-				regulator-min-microvolt = <1450000>;
-				regulator-max-microvolt = <1450000>;
-				regulator-always-on;
-			};
-			dcdc5_reg: dcdc5 {
-				regulator-name = "vdd_ddr_1.45V";
-				regulator-min-microvolt = <1450000>;
-				regulator-max-microvolt = <1450000>;
-				regulator-always-on;
-			};
-			aldo1_reg: aldo1 {
-				regulator-name = "valive_3.3V";
-				regulator-min-microvolt = <3300000>;
-				regulator-max-microvolt = <3300000>;
-				regulator-always-on;
+		axp228: pmic@3e {
+			compatible = "x-powers,axp228";
+			reg = <0x3e>;
+			
+			regulators {
+				dcdc1_reg: dcdc1 {
+					regulator-name = "vdd_sys_3.3V";
+					regulator-min-microvolt = <3300000>;
+					regulator-max-microvolt = <3300000>;
+					regulator-always-on;
+				};
+				dcdc2_reg: dcdc2 {
+					regulator-name = "vdd_arm_1.1V";
+					regulator-min-microvolt = <1100000>;
+					regulator-max-microvolt = <1100000>;
+					regulator-always-on;
+				};
+				dcdc3_reg: dcdc3 {
+					regulator-name = "vdd_core_1.0V";
+					regulator-min-microvolt = <1000000>;
+					regulator-max-microvolt = <1000000>;
+					regulator-always-on;
+				};
+				dcdc4_reg: dcdc4 {
+					regulator-name = "vdd_sys_1.45V";
+					regulator-min-microvolt = <1450000>;
+					regulator-max-microvolt = <1450000>;
+					regulator-always-on;
+				};
+				dcdc5_reg: dcdc5 {
+					regulator-name = "vdd_ddr_1.45V";
+					regulator-min-microvolt = <1450000>;
+					regulator-max-microvolt = <1450000>;
+					regulator-always-on;
+				};
+				aldo1_reg: aldo1 {
+					regulator-name = "valive_3.3V";
+					regulator-min-microvolt = <3300000>;
+					regulator-max-microvolt = <3300000>;
+					regulator-always-on;
+				};
 			};
 		};
 	};
-};
 
-/* Static Bus CS1 供 DM9000 网卡使用 */
-&sromc {
-	status = "okay";
-	
+	/* Static Bus CS1 供 DM9000 网卡使用，直接映射物理地址 */
 	ethernet@4000000 {
 		compatible = "davicom,dm9000";
 		reg = <0x04000000 0x2>, <0x04000004 0x2>;

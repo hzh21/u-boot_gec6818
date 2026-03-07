@@ -118,8 +118,8 @@
 	/* 使用 GPIO 模拟 I2C 驱动 AXP228 */
 	i2c3: i2c-gpio-3 {
 		compatible = "i2c-gpio";
-		gpios = <&gpioc 16 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>, /* SDA */
-			    <&gpioc 15 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>; /* SCL */
+		gpios = <&gpio_c 16 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>, /* SDA */
+			    <&gpio_c 15 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>; /* SCL */
 		i2c-gpio,delay-us = <5>; /* 100KHz 速率 */
 		#address-cells = <1>;
 		#size-cells = <0>;
@@ -174,7 +174,7 @@
 	ethernet@4000000 {
 		compatible = "davicom,dm9000";
 		reg = <0x04000000 0x2>, <0x04000004 0x2>;
-		interrupt-parent = <&gpioc>;
+		interrupt-parent = <&gpio_c>;
 		interrupts = <26 IRQ_TYPE_LEVEL_LOW>;
 		davicom,no-eeprom;
 	};

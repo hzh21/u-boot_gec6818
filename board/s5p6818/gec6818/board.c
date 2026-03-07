@@ -335,14 +335,6 @@ static void set_ether_addr(void)
 	env_set("ethaddr", ethaddr);
 }
 
-	sprintf(ethaddr, "%02x:%02x:%02x:%02x:%02x:%02x",
-			mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-	if (!ret)
-		printf("MAC:  [%s]\n", ethaddr);
-
-	env_set("ethaddr", ethaddr);
-}
-
 #ifdef CONFIG_REVISION_TAG
 static void set_board_rev(void)
 {

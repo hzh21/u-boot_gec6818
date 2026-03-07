@@ -92,27 +92,26 @@ static inline void bd_pwm_config_gpio(int ch)
 
 static void bd_backlight_off(void)
 {
-#ifdef CONFIG_ONEWIRE
-	onewire_set_backlight(0);
-
-#elif defined(CONFIG_BACKLIGHT_CH)
+	/* 荣品直接使用 PWM 控制，去除 OneWire */
+#if defined(CONFIG_BACKLIGHT_CH)
 	bd_pwm_config_gpio(CONFIG_BACKLIGHT_CH);
 #endif
 }
 
 static void bd_backlight_on(void)
 {
-#ifdef CONFIG_ONEWIRE
-	onewire_set_backlight(127);
-
-#elif defined(CONFIG_BACKLIGHT_CH)
-	/* pwm backlight ON: HIGH, ON: LOW */
-	pwm_init(CONFIG_BACKLIGHT_CH,
-		CONFIG_BACKLIGHT_DIV, CONFIG_BACKLIGHT_INV);
+	/* 荣品直接使用 PWM 控制，去除 OneWire */
+#if defined(CONFIG_BACKLIGHT_CH)
+	pwm_init(CONFIG_BACKLIGHT_CH, CONFIG_BACKLIGHT_DIV, CONFIG_BACKLIGHT_INV);
 	pwm_config(CONFIG_BACKLIGHT_CH,
 		TO_DUTY_NS(CONFIG_BACKLIGHT_DUTY, CONFIG_BACKLIGHT_HZ),
 		TO_PERIOD_NS(CONFIG_BACKLIGHT_HZ));
 #endif
+}
+
+static void bd_onewire_init(void)
+{
+	/* 荣品板子没有 OneWire，直接置空即可 */
 }
 
 static void bd_lcd_config_gpio(void)
@@ -251,14 +250,6 @@ static void bd_bootdev_init(void)
 	}
 }
 
-static void bd_onewire_init(void)
-{
-	unsigned char lcd;
-	unsigned short fw_ver;
-
-	onewire_init();
-	onewire_get_info(&lcd, &fw_ver);
-}
 
 static void bd_lcd_init(void)
 {
@@ -330,15 +321,19 @@ static void set_ether_addr(void)
 {
 	unsigned char mac[6];
 	char ethaddr[20];
-	int ret;
 
-	ret = mac_read_from_generic_eeprom(mac);
-	if (ret < 0) {
-		if (env_get("ethaddr"))
-			return;
+	if (env_get("ethaddr"))
+		return;
 
-		make_ether_addr(mac);
-	}
+	/* 荣品没有 I2C MAC 芯片，直接生成基于 CPU ID 的固定 MAC 地址 */
+	make_ether_addr(mac);
+
+	sprintf(ethaddr, "%02x:%02x:%02x:%02x:%02x:%02x",
+			mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+	
+	printf("MAC:  [%s]\n", ethaddr);
+	env_set("ethaddr", ethaddr);
+}
 
 	sprintf(ethaddr, "%02x:%02x:%02x:%02x:%02x:%02x",
 			mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
@@ -507,57 +502,30 @@ static int bd_set_recovery_wipe_data(void)
 
 static void bd_check_recovery_key(void)
 {
-	int alive_0, pin_status;
+	int alive_0;
 	int i;
 
-	if (env_get_yesno("recovery_check") != 1)
-		return;
-
+	/* 荣品的 Update Key 接在 ALIVE 0 引脚 */
 #define SCR_ALIVEGPIOINPUTVALUE	(SCR_ALIVE_BASE + 0x11C)
+	
+	/* 检查 ALIVE 0 是否被拉低 (按下) */
 	alive_0 = readl(SCR_ALIVEGPIOINPUTVALUE) & 1;
+	if (alive_0) return; /* 高电平说明没按下，直接返回 */
 
-	/* GPIOB27 (hp-det) as input */
-	nx_gpio_set_pad_function(gpio_b, 27, 1);
-	nx_gpio_set_output_enable(gpio_b, 27, 0);
+	printf("检测到刷机按键 (ALIVE 0) 按下，准备进入 Fastboot/Update...\n");
 
-	pin_status = nx_gpio_get_input_value(gpio_b, 27);
-	if (alive_0 || !pin_status)
-		return;
-
-	printf("checking recovery key...");
-
-	/* GPIOB12 (status_led) as output */
-	nx_gpio_set_pad_function(gpio_b, 12, 2);
-	nx_gpio_set_output_enable(gpio_b, 12, 1);
-
-	/* detecting falling edge */
-	nx_gpio_set_detect_mode(gpio_b, 27, 0x2);
-	nx_gpio_set_detect_enable(gpio_b, 27, 1);
-
+	/* 防抖：确认按键按下了足够长的时间 (比如 2.5秒) */
 	for (i = 0; i < 2500; i++) {
 		alive_0 = readl(SCR_ALIVEGPIOINPUTVALUE) & 1;
-		if (alive_0)
-			break;
-
+		if (alive_0) break; /* 中途松开了 */
 		mdelay(1);
-		if (i == 500)
-			nx_gpio_set_output_value(gpio_b, 12, 1);
 	}
 
-	nx_gpio_set_output_value(gpio_b, 12, 0);
-	nx_gpio_set_detect_enable(gpio_b, 27, 0);
-	pin_status = nx_gpio_get_detect_status(gpio_b, 27, 1);
-
-	/* power key pressed 2.5s and gpio event detected */
-	if (i >= 2500 && pin_status) {
-		printf("\nenter recovery mode (wipe_data)\n");
-		onewire_set_backlight(80);
-		bd_set_recovery_wipe_data();
-		run_command("env_set initrd_name ramdisk-recovery.img; boot", 0);
+	if (i >= 2500) {
+		printf("\n进入刷机/更新模式!\n");
+		/* 荣品老代码里是进入 Update 或 Fastboot，这里执行对应命令 */
+		run_command("fastboot 0", 0);
 	}
-
-	printf("none\n");
-	return;
 }
 
 static void bd_check_reset(void)

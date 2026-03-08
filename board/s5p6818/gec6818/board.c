@@ -98,6 +98,7 @@ static void bd_backlight_off(void)
 #endif
 }
 
+
 static void bd_backlight_on(void)
 {
 	/* 荣品直接使用 PWM 控制，去除 OneWire */
@@ -113,6 +114,7 @@ static void bd_onewire_init(void)
 {
 	/* 荣品板子没有 OneWire，直接置空即可 */
 }
+
 
 static void bd_lcd_config_gpio(void)
 {
@@ -251,6 +253,7 @@ static void bd_bootdev_init(void)
 }
 
 
+
 static void bd_lcd_init(void)
 {
 	struct nxp_lcd *cfg;
@@ -334,6 +337,7 @@ static void set_ether_addr(void)
 	printf("MAC:  [%s]\n", ethaddr);
 	env_set("ethaddr", ethaddr);
 }
+
 
 #ifdef CONFIG_REVISION_TAG
 static void set_board_rev(void)
@@ -492,7 +496,7 @@ static int bd_set_recovery_wipe_data(void)
 	return 1;
 }
 
-static void bd_check_recovery_key(void)
+tatic void bd_check_recovery_key(void)
 {
 	int alive_0;
 	int i;
@@ -519,6 +523,7 @@ static void bd_check_recovery_key(void)
 		run_command("fastboot 0", 0);
 	}
 }
+
 
 static void bd_check_reset(void)
 {
@@ -553,18 +558,7 @@ int board_early_init_f(void)
 }
 
 int board_init(void)
-{	/* --- 2GB 暴力开启补丁 --- */
-	/* 1. 解锁内存控制器配置 */
-	writel(0x00000001, (void *)0xC00E0014); 
-	
-	/* 2. 强行开启 Bank 1 (CS1) 的映射窗口 */
-	/* 这个值参考自荣品 2GB NSIH 参数：0x13210B80 */
-	/* 它的含义是将 0x80000000 ~ 0xBFFFFFFF 映射给第二片内存 */
-	writel(0x13210B80, (void *)0xC00E001C); 
-	
-	/* 3. 锁定配置 */
-	writel(0x00000000, (void *)0xC00E0014); 
-	/* ------------------------ */
+{
 	bd_hwrev_init();
 	bd_bootdev_init();
 	bd_onewire_init();
@@ -670,8 +664,10 @@ int dram_init_banksize(void)
 	gd->bd->bi_dram[0].start = CFG_SYS_SDRAM_BASE;
 	gd->bd->bi_dram[0].size  = CFG_SYS_SDRAM_SIZE;
 
+	if (g_NR_chip > 1) {
 		gd->bd->bi_dram[1].start = 0x80000000;
 		gd->bd->bi_dram[1].size  = 0x40000000;
+	}
 	return 0;
 }
 

@@ -496,7 +496,7 @@ static int bd_set_recovery_wipe_data(void)
 	return 1;
 }
 
-tatic void bd_check_recovery_key(void)
+static void bd_check_recovery_key(void)
 {
 	int alive_0;
 	int i;

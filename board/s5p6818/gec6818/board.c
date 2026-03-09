@@ -648,26 +648,36 @@ int splash_screen_prepare(void)
 /* u-boot dram initialize */
 int dram_init(void)
 {
-	gd->ram_size = CFG_SYS_SDRAM_SIZE;
+	/* --- 开启 2GB 总线映射 (解决 devmem2 Bus Error 的关键) --- */
+	/* 1. 解锁 DMC 内存控制器 */
+	writel(0x00000001, (void *)0xC00E0014); 
+	
+	/* 2. 配置 MemConfig1，将 CS1 (第二颗1GB) 映射到 0x80000000 */
+	/* 0x13210B80 是荣品 2GB 版专属的 AXI 挂载魔法值 */
+	writel(0x13210B80, (void *)0xC00E001C); 
+	
+	/* 3. 锁定 DMC 配置 */
+	writel(0x00000000, (void *)0xC00E0014); 
+
+	/* --- 强行声明总可用内存 (突破 CFG_SYS_SDRAM_SIZE 限制) --- */
+	/* 0x3db00000(Bank0) + 0x40000000(Bank1) = 0x7db00000 */
+	gd->ram_size = 0x7db00000;
 	return 0;
 }
 
 /* u-boot dram board specific */
 int dram_init_banksize(void)
 {
-#define SCR_USER_SIG6_READ		(SCR_ALIVE_BASE + 0x0F0)
-	int g_NR_chip = readl(SCR_USER_SIG6_READ) & 0x3;
-
 	/* set global data memory */
 	gd->bd->bi_boot_params = CFG_SYS_SDRAM_BASE + 0x00000100;
 
+	/* 划分双 Bank 给系统 */
 	gd->bd->bi_dram[0].start = CFG_SYS_SDRAM_BASE;
-	gd->bd->bi_dram[0].size  = CFG_SYS_SDRAM_SIZE;
+	gd->bd->bi_dram[0].size  = 0x3db00000;
+	
+	gd->bd->bi_dram[1].start = 0x80000000;
+	gd->bd->bi_dram[1].size  = 0x40000000;
 
-	if (g_NR_chip > 1) {
-		gd->bd->bi_dram[1].start = 0x80000000;
-		gd->bd->bi_dram[1].size  = 0x40000000;
-	}
 	return 0;
 }
 

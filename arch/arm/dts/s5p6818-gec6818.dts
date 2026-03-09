@@ -16,7 +16,13 @@
 	cpu-model = "S5p6818";
 
 	compatible = "rongpin,rp6818", "nexell,s5p6818";
-
+	memory {
+		device_type = "memory";
+		/* Bank 0：扣除硬件保留的 37MB */
+		reg = <0x40000000 0x3db00000>,
+		/* Bank 1：全量 1GB */
+		      <0x80000000 0x40000000>;
+	};
 	aliases {
 		mmc0 = "/mmc@c0069000";
 		mmc1 = "/mmc@c0062000";

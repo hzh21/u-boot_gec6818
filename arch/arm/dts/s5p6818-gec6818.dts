@@ -169,13 +169,4 @@
 			};
 		};
 	};
-
-	/* Static Bus CS1 供 DM9000 网卡使用，直接映射物理地址 */
-	ethernet@4000000 {
-		compatible = "davicom,dm9000";
-		reg = <0x04000000 0x2>, <0x04000004 0x2>;
-		interrupt-parent = <&gpio_c>;
-		interrupts = <26 IRQ_TYPE_LEVEL_LOW>;
-		davicom,no-eeprom;
-	};
 };

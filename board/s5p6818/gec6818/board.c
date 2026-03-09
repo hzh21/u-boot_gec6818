@@ -648,33 +648,22 @@ int splash_screen_prepare(void)
 /* u-boot dram initialize */
 int dram_init(void)
 {
-	/* --- 开启 2GB 总线映射 (解决 devmem2 Bus Error 的关键) --- */
-	/* 1. 解锁 DMC 内存控制器 */
-	writel(0x00000001, (void *)0xC00E0014); 
-	
-	/* 2. 配置 MemConfig1，将 CS1 (第二颗1GB) 映射到 0x80000000 */
-	/* 0x13210B80 是荣品 2GB 版专属的 AXI 挂载魔法值 */
-	writel(0x13210B80, (void *)0xC00E001C); 
-	
-	/* 3. 锁定 DMC 配置 */
-	writel(0x00000000, (void *)0xC00E0014); 
-
-	/* --- 强行声明总可用内存 (突破 CFG_SYS_SDRAM_SIZE 限制) --- */
-	/* 0x3db00000(Bank0) + 0x40000000(Bank1) = 0x7db00000 */
-	gd->ram_size = 0x7db00000;
+	/* 1. 对 U-Boot "装穷"：只声明前 1GB 内存 */
+	/* 这样 U-Boot 就会乖乖留在 Bank0 (0x40000000) 运行，绝不会崩溃 */
+	gd->ram_size = 0x3db00000;
 	return 0;
 }
 
-/* u-boot dram board specific */
 int dram_init_banksize(void)
 {
-	/* set global data memory */
-	gd->bd->bi_boot_params = CFG_SYS_SDRAM_BASE + 0x00000100;
-
-	/* 划分双 Bank 给系统 */
-	gd->bd->bi_dram[0].start = CFG_SYS_SDRAM_BASE;
+	/* 2. 对 Linux "炫富"：把真实的 2GB 版图全盘托出 */
+	/* U-Boot 在启动内核前，会根据这里的配置，强行重写设备树(DTB) */
+	
+	/* Bank 0: 挂载在 0x40000000，大小 987MB */
+	gd->bd->bi_dram[0].start = 0x40000000;
 	gd->bd->bi_dram[0].size  = 0x3db00000;
 	
+	/* Bank 1: 挂载在 0x80000000，大小 1024MB */
 	gd->bd->bi_dram[1].start = 0x80000000;
 	gd->bd->bi_dram[1].size  = 0x40000000;
 

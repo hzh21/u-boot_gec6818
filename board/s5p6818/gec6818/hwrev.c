@@ -99,6 +99,6 @@ const char *get_board_name(void)
 
 	/* 强行伪装：0b001 是 NanoPC-T3，它在固件中默认支持双 Bank */
 	pcb_rev = 1;
-	return "NanoPC-T3";
+	return "RP-King6818";
 }
 

@@ -54,9 +54,9 @@
 #define CPU_RELEASE_ADDR		CONFIG_SYS_INIT_SP_ADDR
 
 /* memtest works on */
- #define CONFIG_SYS_MEMTEST_START	CONFIG_SYS_SDRAM_BASE
- #define CONFIG_SYS_MEMTEST_END		((ulong)CONFIG_SYS_SDRAM_BASE + \
- 					 (ulong)CONFIG_SYS_SDRAM_SIZE)
+#define CONFIG_SYS_MEMTEST_START    CFG_SYS_SDRAM_BASE
+#define CONFIG_SYS_MEMTEST_END      ((ulong)CFG_SYS_SDRAM_BASE + \
+                                     (ulong)CFG_SYS_SDRAM_SIZE)
 /*-----------------------------------------------------------------------
  *  High Level System Configuration
  */

@@ -53,10 +53,18 @@
 #define COUNTER_FREQUENCY		200000000
 #define CPU_RELEASE_ADDR		CONFIG_SYS_INIT_SP_ADDR
 
+/*-----------------------------------------------------------------------
+ * memtest works on 
+ */
+#undef CONFIG_SYS_MEMTEST_START   /* 先取消之前的定义防止冲突 */
+#undef CONFIG_SYS_MEMTEST_END
+
 #define CONFIG_SYS_MEMTEST_START    CONFIG_SYS_SDRAM_BASE
 #define CONFIG_SYS_MEMTEST_END      ((ulong)CONFIG_SYS_SDRAM_BASE + \
                                      (ulong)CONFIG_SYS_SDRAM_SIZE)
- *  High Level System Configuration
+
+/*-----------------------------------------------------------------------
+ * High Level System Configuration
  */
 
 /* Not used: not need IRQ/FIQ stuff */

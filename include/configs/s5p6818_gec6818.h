@@ -28,10 +28,11 @@
 #define CONFIG_SYS_INIT_SP_ADDR		CONFIG_SYS_TEXT_BASE
 // #define CONFIG_SYS_MONITOR_BASE		CONFIG_SYS_TEXT_BASE
 
-#define CONFIG_SYS_MEM_SIZE         0x80000000 
-#define CONFIG_SYS_RESERVE_MEM_SIZE 0x02500000 /* 37MB */
-#define CFG_SYS_SDRAM_BASE          0x40000000
-#define CFG_SYS_SDRAM_SIZE          (CONFIG_SYS_MEM_SIZE - CONFIG_SYS_RESERVE_MEM_SIZE)
+#define CONFIG_SYS_MEM_SIZE		0x40000000
+#define CONFIG_SYS_RESERVE_MEM_SIZE	0x02500000 /* 37MB */
+#define CFG_SYS_SDRAM_BASE		0x40000000
+#define CFG_SYS_SDRAM_SIZE		(CONFIG_SYS_MEM_SIZE - CONFIG_SYS_RESERVE_MEM_SIZE)
+
 // #define CONFIG_SYS_MALLOC_LEN		(32*1024*1024)
 
 /* when CONFIG_LCD */
@@ -39,7 +40,7 @@
 #define BMP_LOAD_ADDR		0x47000000
 
 /* dram 2 bank num */
-#define CONFIG_NR_DRAM_BANKS		2
+// #define CONFIG_NR_DRAM_BANKS		2
 
 /* kernel load address */
 #define CONFIG_SYS_LOAD_ADDR		0x48000000
@@ -54,9 +55,9 @@
 #define CPU_RELEASE_ADDR		CONFIG_SYS_INIT_SP_ADDR
 
 /* memtest works on */
-#define CONFIG_SYS_MEMTEST_START    CFG_SYS_SDRAM_BASE
-#define CONFIG_SYS_MEMTEST_END      ((ulong)CFG_SYS_SDRAM_BASE + \
-                                     (ulong)CFG_SYS_SDRAM_SIZE)
+// #define CONFIG_SYS_MEMTEST_START	CONFIG_SYS_SDRAM_BASE
+// #define CONFIG_SYS_MEMTEST_END		((ulong)CONFIG_SYS_SDRAM_BASE + \
+// 					 (ulong)CONFIG_SYS_SDRAM_SIZE)
 /*-----------------------------------------------------------------------
  *  High Level System Configuration
  */

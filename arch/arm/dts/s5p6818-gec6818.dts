@@ -16,13 +16,6 @@
 	cpu-model = "S5p6818";
 
 	compatible = "rongpin,rp6818", "nexell,s5p6818";
-	memory {
-		device_type = "memory";
-		/* Bank 0：扣除硬件保留的 37MB */
-		reg = <0x40000000 0x3db00000>,
-		/* Bank 1：全量 1GB */
-		      <0x80000000 0x40000000>;
-	};
 	aliases {
 		mmc0 = "/mmc@c0069000";
 		mmc1 = "/mmc@c0062000";
@@ -115,63 +108,6 @@
 				height = <600>;
 				format = <0x06530000>;
 				pixel_byte = <4>;
-			};
-		};
-	};
-
-	/* --- 以下为荣品特有硬件，直接定义在根节点下 --- */
-
-	/* 使用 GPIO 模拟 I2C 驱动 AXP228 */
-	i2c3: i2c-gpio-3 {
-		compatible = "i2c-gpio";
-		gpios = <&gpio_c 16 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>, /* SDA */
-			    <&gpio_c 15 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>; /* SCL */
-		i2c-gpio,delay-us = <5>; /* 100KHz 速率 */
-		#address-cells = <1>;
-		#size-cells = <0>;
-		status = "okay";
-		
-		axp228: pmic@3e {
-			compatible = "x-powers,axp228";
-			reg = <0x3e>;
-			
-			regulators {
-				dcdc1_reg: dcdc1 {
-					regulator-name = "vdd_sys_3.3V";
-					regulator-min-microvolt = <3300000>;
-					regulator-max-microvolt = <3300000>;
-					regulator-always-on;
-				};
-				dcdc2_reg: dcdc2 {
-					regulator-name = "vdd_arm_1.1V";
-					regulator-min-microvolt = <1100000>;
-					regulator-max-microvolt = <1100000>;
-					regulator-always-on;
-				};
-				dcdc3_reg: dcdc3 {
-					regulator-name = "vdd_core_1.0V";
-					regulator-min-microvolt = <1000000>;
-					regulator-max-microvolt = <1000000>;
-					regulator-always-on;
-				};
-				dcdc4_reg: dcdc4 {
-					regulator-name = "vdd_sys_1.45V";
-					regulator-min-microvolt = <1450000>;
-					regulator-max-microvolt = <1450000>;
-					regulator-always-on;
-				};
-				dcdc5_reg: dcdc5 {
-					regulator-name = "vdd_ddr_1.45V";
-					regulator-min-microvolt = <1450000>;
-					regulator-max-microvolt = <1450000>;
-					regulator-always-on;
-				};
-				aldo1_reg: aldo1 {
-					regulator-name = "valive_3.3V";
-					regulator-min-microvolt = <3300000>;
-					regulator-max-microvolt = <3300000>;
-					regulator-always-on;
-				};
 			};
 		};
 	};

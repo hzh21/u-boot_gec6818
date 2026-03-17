@@ -648,25 +648,26 @@ int splash_screen_prepare(void)
 /* u-boot dram initialize */
 int dram_init(void)
 {
-	/* 1. 对 U-Boot "装穷"：只声明前 1GB 内存 */
-	/* 这样 U-Boot 就会乖乖留在 Bank0 (0x40000000) 运行，绝不会崩溃 */
-	gd->ram_size = 0x3db00000;
+	gd->ram_size = CFG_SYS_SDRAM_SIZE;
 	return 0;
 }
 
+/* u-boot dram board specific */
 int dram_init_banksize(void)
 {
-	/* 2. 对 Linux "炫富"：把真实的 2GB 版图全盘托出 */
-	/* U-Boot 在启动内核前，会根据这里的配置，强行重写设备树(DTB) */
-	
-	/* Bank 0: 挂载在 0x40000000，大小 987MB */
-	gd->bd->bi_dram[0].start = 0x40000000;
-	gd->bd->bi_dram[0].size  = 0x3db00000;
-	
-	/* Bank 1: 挂载在 0x80000000，大小 1024MB */
-	gd->bd->bi_dram[1].start = 0x80000000;
-	gd->bd->bi_dram[1].size  = 0x40000000;
+#define SCR_USER_SIG6_READ		(SCR_ALIVE_BASE + 0x0F0)
+	int g_NR_chip = readl(SCR_USER_SIG6_READ) & 0x3;
 
+	/* set global data memory */
+	gd->bd->bi_boot_params = CFG_SYS_SDRAM_BASE + 0x00000100;
+
+	gd->bd->bi_dram[0].start = CFG_SYS_SDRAM_BASE;
+	gd->bd->bi_dram[0].size  = CFG_SYS_SDRAM_SIZE;
+
+	if (g_NR_chip > 1) {
+		gd->bd->bi_dram[1].start = 0x80000000;
+		gd->bd->bi_dram[1].size  = 0x40000000;
+	}
 	return 0;
 }
 
